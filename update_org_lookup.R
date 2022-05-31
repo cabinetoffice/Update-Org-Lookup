@@ -1,0 +1,130 @@
+# Read in original org list ####
+
+in_location <- "~/Codes/Update-Org-Lookup/inputs/List of Organisations - GCS Data Audit 2022.xlsx"
+
+df_raw <- 
+  readxl::read_excel(
+    in_location,
+    "Organisations Table"
+  )
+
+out_location <- 
+  "~/Codes/Update-Org-Lookup/outputs"
+  
+wb <- openxlsx::createWorkbook()
+
+# Make changes ####
+
+## v 1.01 - Add an About page and version history ####
+
+version_str <- "1.01"
+
+sheet_name_about = "About"
+
+about <- 
+  tibble::tibble(
+    `ABOUT` = c("This file lists all organisations in government and the departments to which they report. It was originally formulated from the database underlying the following gov.uk page: https://www.gov.uk/government/organisations", 
+      "This document was made to supplement the GCS Data Audit 2022. Queries should be directed to reshapinggcs@cabinetoffice.gov.uk",
+      "The table below shows a version history for this document.")
+  )
+
+version_history <- tibble::tibble(
+  "Version" = c("1", 
+                "1.01"), 
+  "Description and Changes" = c("The initial list sent with the commission.", 
+                                "Add an 'About' page describing the dataset and version history.")
+  )
+
+## v 1.02 - Fill in top-level organisations ####
+
+version_str <- "1.02"
+
+version_history <- 
+  version_history %>% 
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Complete entries for top-level organisations - in the original list, top-level organisations had incomplete entries which caused unintuitive behaviour of filters."
+    )
+
+df_intermediate <- 
+  df_raw %>% 
+  dplyr::mutate(
+    `Top-level sponsor organisation` = dplyr::case_when(
+      is.na(`Top-level sponsor organisation`) ~ Organisation,
+      T ~ `Top-level sponsor organisation`
+    ),
+    `Top-level sponsor organisation ID (API)` = dplyr::case_when(
+      is.na(`Top-level sponsor organisation ID (API)`) ~ `ID (API)`,
+      T ~ `Top-level sponsor organisation ID (API)`
+    ),    
+    `Top-level sponsor organisation slug (readable ID)` = dplyr::case_when(
+      is.na(`Top-level sponsor organisation slug (readable ID)`) ~ `Slug (readable ID)`,
+      T ~ `Top-level sponsor organisation slug (readable ID)`
+    ),
+    `Top-level sponsor organisation abbreviation` = dplyr::case_when(
+      is.na(`Top-level sponsor organisation abbreviation`) ~ Abbreviation,
+      T ~ `Top-level sponsor organisation abbreviation`
+    )
+  )
+  
+## v 1.03 - MOD org changes ####
+
+mod_changes_location <- 
+  "~/Codes/Update-Org-Lookup/inputs/MOD changes - List of Organisations - GCS Data Audit 2022.xlsx"
+
+mod_changes <- 
+  readxl::read_excel(
+    mod_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <- 
+  mod_changes %>% 
+  dplyr::filter(remove) %>% 
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <- 
+  mod_changes %>% 
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <- 
+  df_intermediate %>% 
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>% 
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.03"
+
+version_history <- 
+  version_history %>% 
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Change the list of MOD organisations - following discussions with MOD colleagues, MOD will report using the organisational structure defined in the Defence Operating Model rather than that defined on gov.uk. Some MOD organisations have been added/removed to accommodate this."
+  )
+
+# Write latest version ####
+
+df_final <- 
+  df_intermediate
+
+sysdatetime <- Sys.time() %>% 
+  format("%Y-%m-%d_%H-%M-%S_%Z")
+
+sheet_name_table = "Organisations Table"
+
+openxlsx::addWorksheet(wb, sheet_name_table)
+
+openxlsx::writeDataTable(wb, sheet = sheet_name_table, df_final)
+
+openxlsx::addWorksheet(wb, sheet_name_about)
+
+openxlsx::writeData(wb, sheet = sheet_name_about, x = about)
+
+openxlsx::writeData(wb, sheet = sheet_name_about, x = version_history, startRow = nrow(about) + 3)
+
+openxlsx::saveWorkbook(
+  wb,
+  file = paste0(out_location, "/", sysdatetime, " List of Organisation v", version_str, " - GCS Data Audit 2022 OFFICIAL.xlsx")
+)
