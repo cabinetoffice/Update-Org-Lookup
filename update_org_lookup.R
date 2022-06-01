@@ -104,6 +104,38 @@ version_history <-
     `Description and Changes` = "Change the list of MOD organisations - following discussions with MOD colleagues, MOD will report using the organisational structure defined in the Defence Operating Model rather than that defined on gov.uk. Some MOD organisations have been added/removed to accommodate this."
   )
 
+## v 1.04 - Remove Directly Operated Railways Limited - no longer exists ####
+
+dorl_changes_location <- 
+  "~/Codes/Update-Org-Lookup/inputs/DORL changes - List of Organisations - GCS Data Audit 2022.xlsx"
+
+dorl_changes <- 
+  readxl::read_excel(
+    dorl_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <- 
+  dorl_changes %>% 
+  dplyr::filter(remove) %>% 
+  dplyr::pull(`Slug (readable ID)`)
+
+df_intermediate <- 
+  df_intermediate %>% 
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>% 
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.04"
+
+version_history <- 
+  version_history %>% 
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove the organisation Directly Operated Railways Limited - it no longer exists."
+  )
+
 # Write latest version ####
 
 df_final <- 
