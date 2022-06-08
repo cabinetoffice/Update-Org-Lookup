@@ -211,6 +211,43 @@ version_history <-
     `Description and Changes` = "Change the list of MoJ organisations - following discussions with MoJ colleagues, many organisations are removed and one is added. Most of the removed organisations are courts of some kind and will report through HMCTS. The added organisation is Assessor of Compensation for Miscarriages of Justice."
   )
 
+## v 1.07 - BEIS org change - add Insolvency Rules Committee to BEIS (previously with MOJ) ####
+
+beis_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/BEIS changes - List of Organisations - GCS Data Audit 2022.xlsx"
+
+beis_changes <-
+  readxl::read_excel(
+    beis_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  beis_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  beis_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.07"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Add IRC to BEIS organisations - following discussions with MoJ colleagues, the Insolvency Rules Committee top level organisation has been moved from MOJ to BEIS."
+  )
+
 # Write latest version ####
 
 df_final <-
