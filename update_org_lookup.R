@@ -1,16 +1,18 @@
 # Read in original org list ####
 
+library(magrittr)
+
 in_location <- "~/Codes/Update-Org-Lookup/inputs/List of Organisations - GCS Data Audit 2022.xlsx"
 
-df_raw <- 
+df_raw <-
   readxl::read_excel(
     in_location,
     "Organisations Table"
   )
 
-out_location <- 
+out_location <-
   "~/Codes/Update-Org-Lookup/outputs"
-  
+
 wb <- openxlsx::createWorkbook()
 
 # Make changes ####
@@ -21,17 +23,17 @@ version_str <- "1.01"
 
 sheet_name_about = "About"
 
-about <- 
+about <-
   tibble::tibble(
-    `ABOUT` = c("This file lists all organisations in government and the departments to which they report. It was originally formulated from the database underlying the following gov.uk page: https://www.gov.uk/government/organisations", 
+    `ABOUT` = c("This file lists all organisations in government and the departments to which they report. It was originally formulated from the database underlying the following gov.uk page: https://www.gov.uk/government/organisations",
       "This document was made to supplement the GCS Data Audit 2022. Queries should be directed to reshapinggcs@cabinetoffice.gov.uk",
       "The table below shows a version history for this document.")
   )
 
 version_history <- tibble::tibble(
-  "Version" = c("1", 
-                "1.01"), 
-  "Description and Changes" = c("The initial list sent with the commission.", 
+  "Version" = c("1",
+                "1.01"),
+  "Description and Changes" = c("The initial list sent with the commission.",
                                 "Add an 'About' page describing the dataset and version history.")
   )
 
@@ -39,15 +41,15 @@ version_history <- tibble::tibble(
 
 version_str <- "1.02"
 
-version_history <- 
-  version_history %>% 
+version_history <-
+  version_history %>%
   tibble::add_row(
     Version = version_str,
     `Description and Changes` = "Complete entries for top-level organisations - in the original list, top-level organisations had incomplete entries which caused unintuitive behaviour of filters."
     )
 
-df_intermediate <- 
-  df_raw %>% 
+df_intermediate <-
+  df_raw %>%
   dplyr::mutate(
     `Top-level sponsor organisation` = dplyr::case_when(
       is.na(`Top-level sponsor organisation`) ~ Organisation,
@@ -56,7 +58,7 @@ df_intermediate <-
     `Top-level sponsor organisation ID (API)` = dplyr::case_when(
       is.na(`Top-level sponsor organisation ID (API)`) ~ `ID (API)`,
       T ~ `Top-level sponsor organisation ID (API)`
-    ),    
+    ),
     `Top-level sponsor organisation slug (readable ID)` = dplyr::case_when(
       is.na(`Top-level sponsor organisation slug (readable ID)`) ~ `Slug (readable ID)`,
       T ~ `Top-level sponsor organisation slug (readable ID)`
@@ -66,39 +68,39 @@ df_intermediate <-
       T ~ `Top-level sponsor organisation abbreviation`
     )
   )
-  
+
 ## v 1.03 - MOD org changes ####
 
-mod_changes_location <- 
+mod_changes_location <-
   "~/Codes/Update-Org-Lookup/inputs/MOD changes - List of Organisations - GCS Data Audit 2022.xlsx"
 
-mod_changes <- 
+mod_changes <-
   readxl::read_excel(
     mod_changes_location,
     sheet = 1
   )
 
-orgs_to_remove <- 
-  mod_changes %>% 
-  dplyr::filter(remove) %>% 
+orgs_to_remove <-
+  mod_changes %>%
+  dplyr::filter(remove) %>%
   dplyr::pull(`Slug (readable ID)`)
 
-orgs_to_add <- 
-  mod_changes %>% 
+orgs_to_add <-
+  mod_changes %>%
   dplyr::filter(add) %>%
   dplyr::select(-c(add, remove))
 
-df_intermediate <- 
-  df_intermediate %>% 
+df_intermediate <-
+  df_intermediate %>%
   dplyr::filter(
     !(`Slug (readable ID)` %in% orgs_to_remove)
-  ) %>% 
+  ) %>%
   dplyr::bind_rows(orgs_to_add)
 
 version_str <- "1.03"
 
-version_history <- 
-  version_history %>% 
+version_history <-
+  version_history %>%
   tibble::add_row(
     Version = version_str,
     `Description and Changes` = "Change the list of MOD organisations - following discussions with MOD colleagues, MOD will report using the organisational structure defined in the Defence Operating Model rather than that defined on gov.uk. Some MOD organisations have been added/removed to accommodate this."
@@ -106,42 +108,78 @@ version_history <-
 
 ## v 1.04 - Remove Directly Operated Railways Limited - no longer exists ####
 
-dorl_changes_location <- 
+dorl_changes_location <-
   "~/Codes/Update-Org-Lookup/inputs/DORL changes - List of Organisations - GCS Data Audit 2022.xlsx"
 
-dorl_changes <- 
+dorl_changes <-
   readxl::read_excel(
     dorl_changes_location,
     sheet = 1
   )
 
-orgs_to_remove <- 
-  dorl_changes %>% 
-  dplyr::filter(remove) %>% 
+orgs_to_remove <-
+  dorl_changes %>%
+  dplyr::filter(remove) %>%
   dplyr::pull(`Slug (readable ID)`)
 
-df_intermediate <- 
-  df_intermediate %>% 
+df_intermediate <-
+  df_intermediate %>%
   dplyr::filter(
     !(`Slug (readable ID)` %in% orgs_to_remove)
-  ) %>% 
-  dplyr::bind_rows(orgs_to_add)
+  )
 
 version_str <- "1.04"
 
-version_history <- 
-  version_history %>% 
+version_history <-
+  version_history %>%
   tibble::add_row(
     Version = version_str,
     `Description and Changes` = "Remove the organisation Directly Operated Railways Limited - it no longer exists."
   )
 
+## v 1.05 - Change some of Defra's organisations - Remove Defra core departments and add Defra Group ####
+
+defra_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/Defra changes - List of Organisations - GCS Data Audit 2022.xlsx"
+
+defra_changes <-
+  readxl::read_excel(
+    defra_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  defra_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  defra_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.05"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Change the list of Defra organisations and remove duplication of MOD organisations - following discussions with Defra colleagues, Defra will have the Defra Group organisation added and the Defra core department removed. This is to accommodate the Defra Group structure. Defra Group includes the following organisations: Defra department, Environment agency, Natural England, Forestry Commission, Animal, Plant Health Agency and Rural Payments agency. While the Defra department has been removed from the list, the other 5 will remain. This is to give flexibility to Defra when completing the return. People attributed to Defra Group may spend time in one or multiple of the organisations across Defra Group. The duplication of MOD organisations was due to a bug which has now been fixed."
+    )
+
 # Write latest version ####
 
-df_final <- 
+df_final <-
   df_intermediate
 
-sysdatetime <- Sys.time() %>% 
+sysdatetime <- Sys.time() %>%
   format("%Y-%m-%d_%H-%M-%S_%Z")
 
 sheet_name_table = "Organisations Table"
