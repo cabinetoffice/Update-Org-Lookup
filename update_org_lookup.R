@@ -137,7 +137,7 @@ version_history <-
     `Description and Changes` = "Remove the organisation Directly Operated Railways Limited - it no longer exists."
   )
 
-## v 1.05 - Change some of Defra's organisations - Remove Defra core departments and add Defra Group ####
+## v 1.05 - Defra org changes - Remove Defra core departments and add Defra Group ####
 
 defra_changes_location <-
   "~/Codes/Update-Org-Lookup/inputs/Defra changes - List of Organisations - GCS Data Audit 2022.xlsx"
@@ -174,6 +174,43 @@ version_history <-
     `Description and Changes` = "Change the list of Defra organisations and remove duplication of MOD organisations - following discussions with Defra colleagues, Defra will have the Defra Group organisation added and the Defra core department removed. This is to accommodate the Defra Group structure. Defra Group includes the following organisations: Defra department, Environment agency, Natural England, Forestry Commission, Animal, Plant Health Agency and Rural Payments agency. While the Defra department has been removed from the list, the other 5 will remain. This is to give flexibility to Defra when completing the return. People attributed to Defra Group may spend time in one or multiple of the organisations across Defra Group. The duplication of MOD organisations was due to a bug which has now been fixed."
     )
 
+## v 1.06 - MoJ org changes ####
+
+moj_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/MOJ changes - List of Organisations - GCS Data Audit 2022.xlsx"
+
+moj_changes <-
+  readxl::read_excel(
+    moj_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  moj_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  moj_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.06"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Change the list of MoJ organisations - following discussions with MoJ colleagues, many organisations are removed and one is added. Most of the removed organisations are courts of some kind and will report through HMCTS. The added organisation is Assessor of Compensation for Miscarriages of Justice."
+  )
+
 # Write latest version ####
 
 df_final <-
@@ -196,5 +233,5 @@ openxlsx::writeData(wb, sheet = sheet_name_about, x = version_history, startRow 
 
 openxlsx::saveWorkbook(
   wb,
-  file = paste0(out_location, "/", sysdatetime, " List of Organisation v", version_str, " - GCS Data Audit 2022 OFFICIAL.xlsx")
+  file = paste0(out_location, "/", sysdatetime, " List of Organisations v", version_str, " - GCS Data Audit 2022 OFFICIAL.xlsx")
 )
