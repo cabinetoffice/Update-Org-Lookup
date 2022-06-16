@@ -248,6 +248,80 @@ version_history <-
     `Description and Changes` = "Add IRC to BEIS organisations - following discussions with MoJ colleagues, the Insolvency Rules Committee top level organisation has been moved from MOJ to BEIS."
   )
 
+## v 1.08 - MoJ org change - add Design102 Government Shared Services ####
+
+moj_2_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/MOJ changes 2 - List of Organisations - GCS Data Audit 2022.xlsx"
+
+moj_2_changes <-
+  readxl::read_excel(
+    moj_2_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  moj_2_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  moj_2_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.08"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Add Design 102 to MoJ organisations - following discussions with MoJ colleagues, it is imperative the D102 - being a cross government service - is recorded separately to the MoJ core department."
+  )
+
+## v 1.09 - FCDO org change - remove Chevening as they are part of FCDO core department ####
+
+fcdo_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/FCDO changes - List of Organisations - GCS Data Audit 2022.xlsx"
+
+fcdo_changes <-
+  readxl::read_excel(
+    fcdo_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  fcdo_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  fcdo_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.09"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove Chevening Scholarship Programme - following discussions with FCDO colleagues Chevening has been removed as it is part of the FCDO core department."
+  )
+
 # Write latest version ####
 
 df_final <-
