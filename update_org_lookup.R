@@ -470,6 +470,42 @@ version_history <-
     `Description and Changes` = "Remove Veterinary Products Committee and Science Advisory Council - Defra colleagues indicate that VPC is part of the Veterinary Medicines Directorate. The SAC is part of core Defra."
   )
 
+## v 1.14 - Defra changes - Add the Defra core department back in ####
+
+defra_changes_4_location <-
+  "~/Codes/Update-Org-Lookup/inputs/Defra changes 4 - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+defra_changes_4 <-
+  readxl::read_excel(
+    defra_changes_4_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  defra_changes_4 %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  defra_changes_4 %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.14"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Add Defra core department - Following discussion with Defra colleagues, the core department has been re-added in."
+  )
 
 # Write latest version ####
 
