@@ -324,22 +324,22 @@ version_history <-
 
 ## v 1.10 - Remove BBC World Service from FCDO and attribute it to DCMS ####
 
-fcdo_2_changes_location <-
-  "~/Codes/Update-Org-Lookup/inputs/FCDO changes - List of Organisations - GCS Data Audit 2022.xlsx"
+fcdo_dcms_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/FCDO and DCMS changes - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
 
-fcdo_changes <-
+fcdo_dcms_changes_location <-
   readxl::read_excel(
-    fcdo_changes_location,
+    fcdo_dcms_changes_location,
     sheet = 1
   )
 
 orgs_to_remove <-
-  fcdo_changes %>%
+  fcdo_dcms_changes_location %>%
   dplyr::filter(remove) %>%
   dplyr::pull(`Slug (readable ID)`)
 
 orgs_to_add <-
-  fcdo_changes %>%
+  fcdo_dcms_changes_location %>%
   dplyr::filter(add) %>%
   dplyr::select(-c(add, remove))
 
@@ -350,19 +350,132 @@ df_intermediate <-
   ) %>%
   dplyr::bind_rows(orgs_to_add)
 
-version_str <- "1.09"
+version_str <- "1.10"
 
 version_history <-
   version_history %>%
   tibble::add_row(
     Version = version_str,
-    `Description and Changes` = "Remove Chevening Scholarship Programme - following discussions with FCDO colleagues Chevening has been removed as it is part of the FCDO core department."
+    `Description and Changes` = "Remove BBC World Service from FCDO and attribute it to DCMS  - following discussions with FCDO colleagues BBC World Service has been reallocated to DCMS. FCDO suggest that BBC WS may be included in the main BBC return."
   )
+
+## v 1.11 - Defra changes - remove BCMS, FCERM R&D Programme, FFC and RDPE Network ####
+
+defra_2_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/Defra changes 2 - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+defra_2_changes <-
+  readxl::read_excel(
+    defra_2_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  defra_2_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  defra_2_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.11"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove BCMS, FCERM R&D Programme, FFC and RDPE Network from Defra's organsiations - BCMS has merged with RPA. RDPE is a network and not a body. FCERM R&D Programme is a programme within the Environment Agency. FFC isn’t a Defra public body, but it may sit under the Met Office."
+  )
+
+## v 1.12 - DIT changes - remove all DIT ALBs except Trade Remedies Authority ####
+
+dit_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/DIT changes - List of Organisations v1.11 - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+dit_changes <-
+  readxl::read_excel(
+    dit_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  dit_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  dit_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.12"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove the following orgs from DIT's ALBS: Export Control Joint Unit, Life Sciences, Office for Investment, UK Defence and Security Exports, UK National Contact Point - Following discussion with DIT colleagues these were identified as all part of the DIT central organisation."
+  )
+
+## v 1.13 - Defra changes - Remove Veterinary Products COmmittee and the Science Advisory Council from Defra's ALBs ####
+
+defra_changes_3_location <-
+  "~/Codes/Update-Org-Lookup/inputs/Defra changes 3 - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+defra_changes_3 <-
+  readxl::read_excel(
+    defra_changes_3_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  defra_changes_3 %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  defra_changes_3 %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.13"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove Veterinary Products Committee and Science Advisory Council - Defra colleagues indicate that VPC is part of the Veterinary Medicines Directorate. The SAC is part of core Defra."
+  )
+
 
 # Write latest version ####
 
 df_final <-
-  df_intermediate
+  df_intermediate %>%
+  dplyr::arrange(Organisation)
 
 sysdatetime <- Sys.time() %>%
   format("%Y-%m-%d_%H-%M-%S_%Z")
