@@ -473,7 +473,7 @@ version_history <-
 ## v 1.14 - Defra changes - Add the Defra core department back in ####
 
 defra_changes_4_location <-
-  "~/Codes/Update-Org-Lookup/inputs/Defra changes 4 - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
+  "~/Codes/Update-Org-Lookup/inputs/Defra changes 4 - List of Organisations - GCS Data Audit 2022.xlsx"
 
 defra_changes_4 <-
   readxl::read_excel(
