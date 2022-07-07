@@ -507,6 +507,43 @@ version_history <-
     `Description and Changes` = "Add Defra core department - Following discussion with Defra colleagues, the core department has been re-added in."
   )
 
+## v 1.15 - DCMS changes - Remove the following as they are either public corporations out of scope of the exercise, or small boards that sit within ALBS: BBC, BBC World Service, Channel 4, Historic Royal Palaces, S4C, The Advisory Council on National Records and Archives, The Reviewing Committee on the Export of Works of Art and Objects of Cultural Interest, The Theatres Trust, Treasure Valuation Committee ####
+
+dcms_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/DCMS changes - List of Organisations - GCS Data Audit 2022.xlsx"
+
+dcms_changes <-
+  readxl::read_excel(
+    dcms_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  dcms_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  dcms_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.15"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove some DCMS organisations - Following discussion with DCMS colleagues, the following organisations have been removed as they are either public corporations out of scope of the exercise, or small boards that sit within ALBS: BBC, BBC World Service, Channel 4, Historic Royal Palaces, S4C, The Advisory Council on National Records and Archives, The Reviewing Committee on the Export of Works of Art and Objects of Cultural Interest, The Theatres Trust, Treasure Valuation Committee"
+  )
+
 # Write latest version ####
 
 df_final <-
