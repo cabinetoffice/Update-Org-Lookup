@@ -544,6 +544,117 @@ version_history <-
     `Description and Changes` = "Remove some DCMS organisations - Following discussion with DCMS colleagues, the following organisations have been removed as they are either public corporations out of scope of the exercise, or small boards that sit within ALBS: BBC, BBC World Service, Channel 4, Historic Royal Palaces, S4C, The Advisory Council on National Records and Archives, The Reviewing Committee on the Export of Works of Art and Objects of Cultural Interest, The Theatres Trust, Treasure Valuation Committee"
   )
 
+## v 1.16 - Devolved Administration changes - Remove the devolved administrations ####
+
+devolved_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/Devolved Administration changes - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+devolved_changes <-
+  readxl::read_excel(
+    devolved_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  devolved_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  devolved_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.16"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove the devolved administration - Devolved Administrations are out of scope of the GCS Data Audit."
+  )
+
+## v 1.17 - Change abbreviation for Scotland Office - Change the abbreviation used for Scotland Office from OOTSOSSFS and OSSS to SO ####
+
+scotland_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/Scotland Office changes - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+scotland_changes <-
+  readxl::read_excel(
+    scotland_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  scotland_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  scotland_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.17"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Change the abbreviation used for the Scotland Office."
+  )
+
+## v 1.18 - Change abbreviation for Home Office - Change the abbreviation used for Scotland Office from Home Office to HO ####
+
+home_office_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/Home Office changes - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+home_office_changes <-
+  readxl::read_excel(
+    home_office_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  home_office_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  home_office_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.18"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Change the abbreviation used for the Home Office."
+  )
+
 # Write latest version ####
 
 df_final <-
