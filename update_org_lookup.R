@@ -655,6 +655,43 @@ version_history <-
     `Description and Changes` = "Change the abbreviation used for the Home Office."
   )
 
+## v 1.19 - Change abbreviation for Wales Office - Change the abbreviation used for Wales Office from UK Government in Wales to WO ####
+
+wales_office_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/Wales Office changes - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+wales_office_changes <-
+  readxl::read_excel(
+    wales_office_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  wales_office_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  wales_office_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.19"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Change the abbreviation used for the UK Government in Wales."
+  )
+
 # Write latest version ####
 
 df_final <-
