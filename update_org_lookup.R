@@ -692,6 +692,44 @@ version_history <-
     `Description and Changes` = "Change the abbreviation used for the UK Government in Wales."
   )
 
+## v 1.20 - DCMS changes - Remove some DCMS organisations - Following conversations with DCMS colleagues, the following organisations were included with the main DCMS submission and therefore the organisations have been removed: Office for Artificial Intelligence and Centre for Data Ethics and Innovation. ####
+
+dcms_changes_2_location <-
+  "~/Codes/Update-Org-Lookup/inputs/DCMS changes 2 - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+dcms_changes_2 <-
+  readxl::read_excel(
+    dcms_changes_2_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  dcms_changes_2 %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  dcms_changes_2 %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.20"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove some DCMS organisations - Following conversations with DCMS colleagues, the following organisations were included with the main DCMS submission and therefore the organisations have been removed: Office for Artificial Intelligence and Centre for Data Ethics and Innovation."
+  )
+
+
 # Write latest version ####
 
 df_final <-
