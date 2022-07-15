@@ -729,6 +729,43 @@ version_history <-
     `Description and Changes` = "Remove some DCMS organisations - Following conversations with DCMS colleagues, the following organisations were included with the main DCMS submission and therefore the organisations have been removed: Office for Artificial Intelligence and Centre for Data Ethics and Innovation."
   )
 
+## v 1.21 - DHSC changes - Add Healthwatch England to DHSC's list of organisations - Following conversations with DHSC colleagues. ####
+
+dhsc_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/DHSC changes - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+dhsc_changes <-
+  readxl::read_excel(
+    dhsc_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  dhsc_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  dhsc_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.21"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Add Healthwatch England to DHSC's list of organisations."
+  )
+
 
 # Write latest version ####
 
