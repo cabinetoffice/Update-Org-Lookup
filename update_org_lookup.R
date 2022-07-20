@@ -766,6 +766,42 @@ version_history <-
     `Description and Changes` = "Add Healthwatch England to DHSC's list of organisations."
   )
 
+## v 1.22 - DCMS changes - Add UNBOXED to DCMS' list of organisations - Following conversations with DCMS colleagues, UNBOXED - previously known as Festival 2022 - has been added. ####
+
+dcms_changes_3_location <-
+  "~/Codes/Update-Org-Lookup/inputs/DCMS changes 3 - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+dcms_changes_3 <-
+  readxl::read_excel(
+    dcms_changes_3_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  dcms_changes_3 %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  dcms_changes_3 %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.22"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Add UNBOXED to DCMS' list of organisations."
+  )
 
 # Write latest version ####
 
