@@ -766,7 +766,7 @@ version_history <-
     `Description and Changes` = "Add Healthwatch England to DHSC's list of organisations."
   )
 
-## v 1.22 - DCMS changes - Add UNBOXED to DCMS' list of organisations - Following conversations with DCMS colleagues, UNBOXED - previously known as Festival 2022 - has been added. ####
+ ## v 1.22 - DCMS changes - Add UNBOXED to DCMS' list of organisations - Following conversations with DCMS colleagues, UNBOXED - previously known as Festival 2022 - has been added. ####
 
 dcms_changes_3_location <-
   "~/Codes/Update-Org-Lookup/inputs/DCMS changes 3 - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
@@ -801,6 +801,43 @@ version_history <-
   tibble::add_row(
     Version = version_str,
     `Description and Changes` = "Add UNBOXED to DCMS' list of organisations."
+  )
+
+## v 1.23 - DfE changes - Remove from IRM and OSA from DfE's list of organisations - Following conversations with DfE colleagues these organisations have been removed as the IRM is not a public body since 2019 and the OSA was declassified as an ALB in 2019. ####
+
+dfe_changes_location <-
+  "~/Codes/Update-Org-Lookup/inputs/DfE changes - List of Organisations - GCS Data Audit 2022 OFFICIAL.xlsx"
+
+dfe_changes <-
+  readxl::read_excel(
+    dfe_changes_location,
+    sheet = 1
+  )
+
+orgs_to_remove <-
+  dfe_changes %>%
+  dplyr::filter(remove) %>%
+  dplyr::pull(`Slug (readable ID)`)
+
+orgs_to_add <-
+  dfe_changes %>%
+  dplyr::filter(add) %>%
+  dplyr::select(-c(add, remove))
+
+df_intermediate <-
+  df_intermediate %>%
+  dplyr::filter(
+    !(`Slug (readable ID)` %in% orgs_to_remove)
+  ) %>%
+  dplyr::bind_rows(orgs_to_add)
+
+version_str <- "1.23"
+
+version_history <-
+  version_history %>%
+  tibble::add_row(
+    Version = version_str,
+    `Description and Changes` = "Remove from IRM and OSA from DfE's list of organisations - Following conversations with DfE colleagues these organisations have been removed as the IRM is not a public body since 2019 and the OSA was declassified as an ALB in 2019."
   )
 
 # Write latest version ####
